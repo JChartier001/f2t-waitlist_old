@@ -1,0 +1,27 @@
+{
+  "name": "@workspace/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "convex dev",
+    "setup": "convex dev --until-success",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p convex",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "convex": "^1.35.1",
+    "convex-helpers": "^0.1.50"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@workspace/eslint-config": "workspace:*",
+    "convex-test": "^0.0.40",
+    "eslint": "^9.39.4",
+    "typescript": "^6.0.3",
+    "vitest": "^2.1.8"
+  }
+}

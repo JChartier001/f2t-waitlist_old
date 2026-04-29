@@ -1,0 +1,144 @@
+# generated: 2026-04-26
+# last_updated: 2026-04-27
+# project: jenchartier
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-04-26
+last_updated: 2026-04-27
+project: jenchartier
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ─── Epic 1: Foundation, Public Site, Auth & Legal ───
+  epic-1: in-progress
+  1-1-project-initialization-monorepo-scaffold: review
+  1-2-convex-backend-foundation: backlog
+  1-3-domain-event-backbone-audit-log-subscriber: backlog
+  1-4-email-pipeline-email-templates-package: backlog
+  1-5-clerk-convex-user-org-sync: backlog
+  1-6-harvest-design-tokens-typography-motion: backlog
+  1-7-foundation-ui-primitives: backlog
+  1-8-site-shell-components: backlog
+  1-9-customer-signup-email-verification: backlog
+  1-10-marketing-pages: backlog
+  1-11-legal-page-rendering: backlog
+  1-12-monitoring-observability-stack: backlog
+  1-13-cicd-pipelines: backlog
+  1-14-testing-infrastructure-quality-gates: backlog
+  1-15-eslint-enforcement-agents-md-convex-ai-files: backlog
+  1-16-disaster-recovery-deployment-runbooks: backlog
+  epic-1-retrospective: optional
+
+  # ─── Epic 2: Vendor Onboarding & Verification ───
+  epic-2: backlog
+  2-1-rules-engine-v1: backlog
+  2-2-vendor-signup-clerk-org-creation-foundation-tier-default: backlog
+  2-3-onboarding-wizard-shell-step-1: backlog
+  2-4-step-2-document-upload-image-pipeline-compliance-attestation: backlog
+  2-5-step-3-stripe-connect-hosted-onboarding-webhook-idempotency-dispatcher: backlog
+  2-6-step-4-vendor-agreement-signing-submit-for-verification: backlog
+  2-7-admin-verification-queue-with-rulesenginechecklist: backlog
+  2-8-admin-approve-action: backlog
+  2-9-admin-request-more-info-action: backlog
+  2-10-admin-reject-action: backlog
+  epic-2-retrospective: optional
+
+  # ─── Epic 3: Vendor Storefront & Operations ───
+  epic-3: backlog
+  3-1-vendor-portal-app-shell-active-vendor-gating: backlog
+  3-2-farm-profile-editor-with-live-preview: backlog
+  3-3-product-creation-editing: backlog
+  3-4-inventory-management: backlog
+  3-5-per-vendor-fulfillment-configuration: backlog
+  3-6-vendor-shareable-storefront-link-with-attribution-tracking: backlog
+  3-7-vendor-sales-dashboard: backlog
+  epic-3-retrospective: optional
+
+  # ─── Epic 4: Marketplace Discovery & Provenance ───
+  epic-4: backlog
+  4-1-search-infrastructure: backlog
+  4-2-marketplace-browse-page: backlog
+  4-3-farm-profile-page: backlog
+  4-4-product-detail-page: backlog
+  4-5-geo-targeted-seo-landing-pages: backlog
+  4-6-cert-badge-filter-verification-linking: backlog
+  4-7-saved-farms-list: backlog
+  epic-4-retrospective: optional
+
+  # ─── Epic 5: Multi-Vendor Cart & Checkout (the wedge) ───
+  epic-5: backlog
+  5-1-cart-data-model-add-to-cart-multifarmcart-ui: backlog
+  5-2-authenticated-cart-merge-abandonment-data-capture: backlog
+  5-3-checkout-step-1-per-vendor-fulfillment-selection: backlog
+  5-4-checkout-step-2-stripe-tax-with-ptc-mapping-facilitator-threshold-monitoring: backlog
+  5-5-checkout-step-3-stripe-connect-split-payment: backlog
+  5-6-order-placement-per-vendor-sub-receipts-confirmations: backlog
+  5-7-stripe-webhook-payment-event-handling: backlog
+  5-8-per-line-refunds-batched-per-vendororder: backlog
+  5-9-7-day-post-delivery-vendor-payouts: backlog
+  epic-5-retrospective: optional
+
+  # ─── Epic 6: Order Lifecycle, Fulfillment & Substitute Discovery ───
+  epic-6: backlog
+  6-1-vendor-order-management-state-transitions: backlog
+  6-2-customer-order-tracking-with-per-vendor-status: backlog
+  6-3-customer-vendor-in-app-messaging: backlog
+  6-4-customer-hold-requests: backlog
+  6-5-vendor-initiated-batched-cancellation: backlog
+  6-6-substitute-matching-engine-cancellation-as-discovery-flow: backlog
+  epic-6-retrospective: optional
+
+  # ─── Epic 7: Customer Account, Trust & Privacy ───
+  epic-7: backlog
+  7-1-customer-account-dashboard-profile-payment-methods: backlog
+  7-2-data-export-within-24h: backlog
+  7-3-account-deletion-with-pii-purge-audit-pseudonymization: backlog
+  7-4-account-settings-notification-preferences-privacy-controls: backlog
+  7-5-customer-reports-misrepresentation-cancellation-service-quality: backlog
+  7-6-customer-foodborne-illness-reports-with-multi-vendor-selection-graduated-response: backlog
+  7-7-tell-us-where-to-launch-next-interest-signal-capture: backlog
+  epic-7-retrospective: optional
+
+  # ─── Epic 8: Admin Enforcement, Incident Response & Compliance Operations ───
+  epic-8: backlog
+  8-1-admin-app-shell-business-metrics-dashboard-legal-review-doc: backlog
+  8-2-customer-report-queue-admin-investigation-tools: backlog
+  8-3-admin-enforcement-actions-warn-suspend-restore-remove: backlog
+  8-4-foodborne-illness-incident-response-with-graduated-response: backlog
+  8-5-vendor-cancellation-rate-tracking-with-admin-configurable-thresholds: backlog
+  8-6-permit-certification-expiry-alerts-with-auto-pause-on-expiry: backlog
+  8-7-admin-discretionary-refunds-customer-credits: backlog
+  epic-8-retrospective: optional

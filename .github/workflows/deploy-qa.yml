@@ -1,0 +1,11 @@
+name: deploy-qa
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  todo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "TODO: Story 1.13 — author the real qa deploy pipeline (Convex deploy --target qa, Vercel deploy preview, Playwright full suite against qa)."

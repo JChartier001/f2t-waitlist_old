@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-page="browse">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Farm2Table — Design Directions</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+/* =========================================================
+   HARVEST PALETTE — locked tokens (shadcn names, oklch values)
+   ========================================================= */
+:root[data-theme="light"] {
+  --background: oklch(0.962 0.022 78);
+  --card: oklch(0.984 0.012 78);
+  --muted: oklch(0.92 0.025 78);
+  --foreground: oklch(0.224 0.022 308);
+  --muted-foreground: oklch(0.452 0.018 308);
+  --text-tertiary: oklch(0.602 0.012 308);
+  --border: oklch(0.872 0.014 78);
+  --border-strong: oklch(0.738 0.018 78);
+  --primary: oklch(0.328 0.062 332);
+  --primary-foreground: oklch(0.962 0.022 78);
+  --primary-hover: oklch(0.288 0.066 332);
+  --accent: oklch(0.738 0.142 72);
+  --accent-foreground: oklch(0.224 0.022 308);
+  --accent-hover: oklch(0.688 0.148 72);
+  --destructive: oklch(0.548 0.158 28);
+  --destructive-foreground: oklch(0.962 0.022 78);
+  --success: oklch(0.502 0.082 138);
+  --warning: oklch(0.738 0.142 72);
+  --ring: oklch(0.738 0.142 72);
+  --pill-pending-bg: oklch(0.94 0.058 78);
+  --pill-pending-text: oklch(0.45 0.118 70);
+  --pill-approved-bg: oklch(0.92 0.045 138);
+  --pill-approved-text: oklch(0.4 0.082 138);
+  --pill-rejected-bg: oklch(0.93 0.05 28);
+  --pill-rejected-text: oklch(0.5 0.142 28);
+  --shadow-sm: 0 1px 2px oklch(0.155 0.022 308 / 0.06);
+  --shadow-md: 0 4px 16px oklch(0.155 0.022 308 / 0.08);
+}
+:root[data-theme="dark"] {
+  --background: oklch(0.155 0.022 308);
+  --card: oklch(0.218 0.018 308);
+  --muted: oklch(0.122 0.022 308);
+  --foreground: oklch(0.948 0.018 78);
+  --muted-foreground: oklch(0.682 0.014 308);
+  --text-tertiary: oklch(0.532 0.012 308);
+  --border: oklch(0.292 0.012 308);
+  --border-strong: oklch(0.388 0.014 308);
+  --primary: oklch(0.638 0.092 332);
+  --primary-foreground: oklch(0.155 0.022 308);
+  --primary-hover: oklch(0.688 0.098 332);
+  --accent: oklch(0.798 0.158 72);
+  --accent-foreground: oklch(0.155 0.022 308);
+  --accent-hover: oklch(0.838 0.162 72);
+  --destructive: oklch(0.658 0.18 28);
+  --destructive-foreground: oklch(0.948 0.018 78);
+  --success: oklch(0.65 0.108 138);
+  --warning: oklch(0.802 0.148 72);
+  --ring: oklch(0.798 0.158 72);
+  --pill-pending-bg: oklch(0.32 0.075 72);
+  --pill-pending-text: oklch(0.85 0.13 72);
+  --pill-approved-bg: oklch(0.28 0.058 138);
+  --pill-approved-text: oklch(0.78 0.108 138);
+  --pill-rejected-bg: oklch(0.3 0.085 28);
+  --pill-rejected-text: oklch(0.82 0.142 28);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.3);
+  --shadow-md: 0 4px 16px oklch(0 0 0 / 0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: "Geist", system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  background: var(--background);
+  color: var(--foreground);
+  transition: background 0.2s ease-out, color 0.2s ease-out;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.serif { font-family: "Fraunces", Georgia, serif; }
+.mono { font-family: "Geist Mono", ui-monospace, monospace; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+/* =========================================================
+   CONTROL BAR (mockup chrome — not part of the actual product)
+   ========================================================= */
+.mockup-bar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+}
+.mockup-bar strong {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--foreground);
+}
+.mockup-bar-group { display: flex; gap: 4px; }
+.mockup-bar-group label { color: var(--muted-foreground); margin-right: 6px; align-self: center; font-weight: 500; }
+.mockup-chip {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 500;
+}
+.mockup-chip:hover { border-color: var(--border-strong); }
+.mockup-chip.active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+/* =========================================================
+   SHARED CHROME — top nav, footer, buttons
+   ========================================================= */
+.topnav {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  position: sticky;
+  top: 38px;
+  z-index: 100;
+}
+@media (max-width: 600px) { .topnav { padding: 12px 16px; gap: 12px; top: 60px; } }
+.topnav-logo {
+  font-family: "Fraunces", serif;
+  font-weight: 500;
+  font-size: 20px;
+  font-variation-settings: "opsz" 24;
+  color: var(--primary);
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+.topnav-search {
+  flex: 1;
+  max-width: 480px;
+  position: relative;
+}
+.topnav-search input {
+  width: 100%;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 14px 9px 36px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--foreground);
+  min-height: 40px;
+}
+.topnav-search input::placeholder { color: var(--text-tertiary); }
+.topnav-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+.topnav-links {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  font-size: 14px;
+}
+@media (max-width: 900px) { .topnav-links .topnav-link { display: none; } }
+.topnav-link {
+  color: var(--foreground);
+  font-weight: 500;
+  text-decoration: none;
+}
+.topnav-link:hover { color: var(--accent); }
+.topnav-actions { display: flex; gap: 8px; align-items: center; }
+.topnav-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  font-size: 18px;
+}
+.topnav-icon-btn:hover { background: var(--muted); }
+.cart-count {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 1px 5px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease-out;
+  min-height: 44px;
+}
+.btn-primary { background: var(--primary); color: var(--primary-foreground); }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-accent { background: var(--accent); color: var(--accent-foreground); }
+.btn-accent:hover { background: var(--accent-hover); }
+.btn-secondary { background: transparent; color: var(--foreground); border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--muted); }
+.btn-ghost { background: transparent; color: var(--accent); padding: 12px 8px; }
+.btn-ghost:hover { background: var(--muted); }
+.btn-sm { min-height: 36px; padding: 7px 14px; font-size: 13px; }
+.btn-lg { min-height: 52px; padding: 14px 28px; font-size: 15px; }
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* =========================================================
+   PAGE VISIBILITY (tabs)
+   ========================================================= */
+.page { display: none; }
+:root[data-page="browse"] .page-browse { display: block; }
+:root[data-page="profile"] .page-profile { display: block; }
+:root[data-page="checkout"] .page-checkout { display: block; }
+
+/* =========================================================
+   BROWSE PAGE
+   ========================================================= */
+.browse-header {
+  padding: 32px 24px 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.browse-h1 {
+  font-family: "Fraunces", serif;
+  font-weight: 500;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  font-variation-settings: "opsz" 60;
+  margin-bottom: 6px;
+}
+.browse-meta {
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+.browse-meta strong { color: var(--foreground); font-weight: 600; }
+.browse-meta a { color: var(--accent); }
+
+.browse-layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px 64px;
+  display: grid;
+  grid-template-columns: 256px 1fr;
+  gap: 32px;
+}
+@media (max-width: 900px) { .browse-layout { grid-template-columns: 1fr; gap: 16px; padding: 0 16px 48px; } }
+
+.filter-rail { padding-top: 8px; }
+@media (max-width: 900px) { .filter-rail { display: none; } }
+.filter-mobile-trigger {
+  display: none;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+  cursor: pointer;
+  margin-bottom: 16px;
+  width: 100%;
+  text-align: left;
+}
+@media (max-width: 900px) { .filter-mobile-trigger { display: block; } }
+
+.filter-group { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.filter-group:last-child { border-bottom: none; }
+.filter-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: 10px;
+}
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 14px;
+  color: var(--foreground);
+  cursor: pointer;
+}
+.filter-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.filter-option-count { color: var(--text-tertiary); font-size: 13px; margin-left: auto; }
+.filter-zip {
+  display: flex;
+  gap: 8px;
+}
+.filter-zip input {
+  flex: 1;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--foreground);
+}
+.filter-zip-radius {
+  width: 64px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--foreground);
+}
+
+.browse-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.browse-toolbar-meta { font-size: 13px; color: var(--muted-foreground); }
+.sort-select {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.browse-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 1024px) { .browse-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .browse-grid { grid-template-columns: 1fr; gap: 16px; } }
+
+.product-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.product-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.product-card-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+.product-card-img.img-eggs { background: linear-gradient(135deg, hsl(40, 60%, 55%) 0%, hsl(35, 55%, 45%) 50%, hsl(95, 25%, 30%) 100%); }
+.product-card-img.img-bread { background: linear-gradient(135deg, hsl(35, 55%, 60%) 0%, hsl(30, 45%, 35%) 60%, hsl(25, 35%, 25%) 100%); }
+.product-card-img.img-honey { background: linear-gradient(135deg, hsl(45, 80%, 65%) 0%, hsl(38, 75%, 50%) 50%, hsl(30, 40%, 30%) 100%); }
+.product-card-img.img-greens { background: linear-gradient(135deg, hsl(85, 35%, 50%) 0%, hsl(95, 30%, 35%) 50%, hsl(110, 28%, 25%) 100%); }
+.product-card-img.img-bacon { background: linear-gradient(135deg, hsl(15, 50%, 50%) 0%, hsl(8, 55%, 35%) 60%, hsl(20, 30%, 25%) 100%); }
+.product-card-img.img-tomato { background: linear-gradient(135deg, hsl(8, 65%, 55%) 0%, hsl(15, 60%, 40%) 60%, hsl(95, 20%, 30%) 100%); }
+.product-card-saved {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+.product-card-body { padding: 14px 16px 16px; }
+.product-card-farm {
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  font-weight: 500;
+  font-variation-settings: "opsz" 14;
+  color: var(--foreground);
+  margin-bottom: 1px;
+}
+.product-card-loc {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin-bottom: 8px;
+}
+.product-card-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--foreground);
+  margin-bottom: 6px;
+}
+.cert-row { display: flex; gap: 4px; margin: 6px 0 8px; flex-wrap: wrap; }
+.cert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--pill-approved-bg);
+  color: var(--pill-approved-text);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.cert-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.product-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 6px;
+}
+.product-card-price {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.product-card-price-unit {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+  margin-left: 3px;
+}
+.product-card-fulfillment {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+/* =========================================================
+   FARM PROFILE PAGE
+   ========================================================= */
+.profile-hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  background:
+    linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.4) 100%),
+    radial-gradient(ellipse at 70% 70%, hsl(45, 60%, 35%) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 40%, hsl(35, 70%, 55%) 0%, transparent 50%),
+    linear-gradient(135deg, hsl(95, 28%, 30%) 0%, hsl(110, 25%, 22%) 50%, hsl(30, 30%, 18%) 100%);
+}
+@media (max-width: 768px) { .profile-hero { aspect-ratio: 4 / 3; } }
+.profile-hero-note {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  font-style: italic;
+  letter-spacing: 0.05em;
+}
+.profile-content-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+@media (max-width: 768px) { .profile-content-wrap { padding: 0 16px; } }
+.profile-header-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-top: -80px;
+  position: relative;
+  z-index: 10;
+  padding: 32px 40px;
+  box-shadow: var(--shadow-md);
+}
+@media (max-width: 768px) { .profile-header-card { margin-top: -40px; padding: 24px; } }
+.profile-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.profile-name {
+  font-family: "Fraunces", serif;
+  font-weight: 400;
+  font-size: clamp(40px, 6vw, 64px);
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--foreground);
+  margin-bottom: 8px;
+}
+.profile-tender {
+  font-size: 15px;
+  color: var(--muted-foreground);
+  margin-bottom: 16px;
+}
+.profile-tender strong { color: var(--foreground); font-weight: 500; }
+.profile-cert-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.profile-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.profile-trust {
+  margin: 32px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.trust-stat {
+  background: var(--card);
+  padding: 18px 20px;
+}
+.trust-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: 6px;
+}
+.trust-stat-value {
+  font-family: "Fraunces", serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--foreground);
+  font-variation-settings: "opsz" 24;
+}
+.trust-stat-detail {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin-top: 2px;
+}
+.trust-stat-detail a { color: var(--accent); font-size: 12px; }
+
+.profile-story {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin: 48px 0;
+}
+@media (max-width: 768px) { .profile-story { grid-template-columns: 1fr; gap: 24px; margin: 32px 0; } }
+.profile-story-text {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--foreground);
+}
+.profile-story-text p { margin-bottom: 18px; }
+.profile-quote {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--foreground);
+  border-left: 2px solid var(--accent);
+  padding-left: 20px;
+  margin-bottom: 16px;
+  font-variation-settings: "opsz" 36;
+}
+.profile-quote-attr { font-size: 13px; color: var(--muted-foreground); }
+.profile-secondary-img {
+  aspect-ratio: 4 / 5;
+  background:
+    radial-gradient(ellipse at 60% 70%, hsl(40, 65%, 45%) 0%, transparent 60%),
+    linear-gradient(135deg, hsl(35, 50%, 35%) 0%, hsl(95, 22%, 25%) 100%);
+  border-radius: 6px;
+  position: relative;
+}
+.profile-secondary-img-note {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  font-style: italic;
+}
+
+.profile-fulfillment {
+  background: var(--muted);
+  border-radius: 6px;
+  padding: 20px 24px;
+  margin: 32px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  font-size: 14px;
+}
+.profile-fulfillment-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: 4px;
+}
+.profile-fulfillment-detail {
+  color: var(--foreground);
+}
+
+.profile-products-section {
+  margin: 48px 0;
+}
+.profile-products-h2 {
+  font-family: "Fraunces", serif;
+  font-size: 28px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  font-variation-settings: "opsz" 30;
+}
+
+/* =========================================================
+   CHECKOUT PAGE
+   ========================================================= */
+.checkout-topnav {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: sticky;
+  top: 38px;
+  z-index: 100;
+}
+.checkout-topnav-secure {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.checkout-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 48px;
+}
+@media (max-width: 1024px) { .checkout-layout { grid-template-columns: 1fr; gap: 24px; padding: 24px 16px 100px; } }
+
+.checkout-h1 {
+  font-family: "Fraunces", serif;
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  font-variation-settings: "opsz" 36;
+  letter-spacing: -0.01em;
+}
+.checkout-context {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  margin-bottom: 24px;
+  padding: 10px 14px;
+  background: var(--pill-pending-bg);
+  color: var(--pill-pending-text);
+  border-radius: 4px;
+  font-style: italic;
+}
+
+.checkout-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.checkout-section-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.checkout-section-title {
+  font-family: "Fraunces", serif;
+  font-size: 18px;
+  font-weight: 500;
+  font-variation-settings: "opsz" 18;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.checkout-section-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Geist", sans-serif;
+}
+.checkout-section-num.complete { background: var(--success); }
+.checkout-section-edit { font-size: 13px; color: var(--accent); cursor: pointer; }
+.checkout-section-body { padding: 20px; }
+
+.checkout-summary-row {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+.checkout-summary-row:last-child { border-bottom: none; }
+.checkout-summary-row-meta { color: var(--muted-foreground); font-size: 12px; }
+
+/* Per-farm fulfillment */
+.farm-fulfillment {
+  border-bottom: 1px solid var(--border);
+  padding: 18px 20px;
+}
+.farm-fulfillment:last-child { border-bottom: none; }
+.farm-fulfillment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.farm-fulfillment-name {
+  font-family: "Fraunces", serif;
+  font-size: 17px;
+  font-weight: 500;
+  font-variation-settings: "opsz" 18;
+}
+.farm-fulfillment-items { font-size: 12px; color: var(--muted-foreground); }
+.farm-fulfillment-status {
+  font-size: 12px;
+  color: var(--success);
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.farm-fulfillment-status::before {
+  content: "✓";
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--success);
+  color: var(--background);
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.fulfillment-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.fulfillment-option {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--background);
+}
+.fulfillment-option:hover { border-color: var(--border-strong); }
+.fulfillment-option.selected {
+  border-color: var(--accent);
+  background: var(--pill-pending-bg);
+}
+.fulfillment-option-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fulfillment-option-detail { font-size: 12px; color: var(--muted-foreground); }
+.fulfillment-option-fee { font-size: 12px; color: var(--accent); font-weight: 600; margin-top: 2px; }
+
+.fulfillment-window {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--foreground);
+}
+.fulfillment-window-day { display: inline-block; margin-right: 12px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+.fulfillment-window-day.selected { background: var(--accent); color: var(--accent-foreground); border-color: var(--accent); }
+
+/* Cart line items in checkout */
+.checkout-line {
+  display: grid;
+  grid-template-columns: 50px 1fr auto;
+  gap: 12px;
+  padding: 12px 0;
+  align-items: center;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.checkout-line:last-child { border-bottom: none; }
+.checkout-line-img { width: 50px; height: 50px; border-radius: 4px; }
+.checkout-line-title { color: var(--foreground); }
+.checkout-line-meta { font-size: 12px; color: var(--muted-foreground); }
+.checkout-line-price { font-weight: 600; }
+
+/* Form */
+.form-row { margin-bottom: 14px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+  margin-bottom: 5px;
+}
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 14px;
+  min-height: 44px;
+}
+.form-input:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+
+/* Order summary */
+.order-summary {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  position: sticky;
+  top: 110px;
+  align-self: start;
+  height: fit-content;
+}
+@media (max-width: 1024px) { .order-summary { position: relative; top: 0; } }
+.order-summary-h2 {
+  font-family: "Fraunces", serif;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  font-variation-settings: "opsz" 24;
+}
+.order-summary-meta {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  margin-bottom: 18px;
+}
+.order-summary-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+.order-summary-line.total {
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+  padding-top: 14px;
+  color: var(--foreground);
+  font-size: 17px;
+  font-weight: 600;
+}
+.order-summary-cta { width: 100%; margin-top: 18px; }
+.order-summary-trust {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Mobile sticky place-order */
+.checkout-mobile-cta {
+  display: none;
+}
+@media (max-width: 1024px) {
+  .checkout-mobile-cta {
+    display: block;
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    z-index: 50;
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* Annotation labels (mockup-only, helps Jen see the rationale) */
+.annotation {
+  position: relative;
+  padding-left: 32px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-style: italic;
+  margin: 16px 0;
+  line-height: 1.5;
+}
+.annotation::before {
+  content: "→";
+  position: absolute;
+  left: 8px;
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 700;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Mockup-only control bar (not part of actual product) -->
+<div class="mockup-bar">
+  <strong>Farm2Table — design directions</strong>
+  <div class="mockup-bar-group">
+    <label>Page</label>
+    <button class="mockup-chip active" data-control="page" data-value="browse">Marketplace browse</button>
+    <button class="mockup-chip" data-control="page" data-value="profile">Farm profile</button>
+    <button class="mockup-chip" data-control="page" data-value="checkout">Checkout</button>
+  </div>
+  <div class="mockup-bar-group">
+    <label>Theme</label>
+    <button class="mockup-chip active" data-control="theme" data-value="light">Light</button>
+    <button class="mockup-chip" data-control="theme" data-value="dark">Dark</button>
+  </div>
+  <span style="margin-left:auto;color:var(--text-tertiary);font-size:11px">Harvest palette · Fraunces + Geist · 320px floor</span>
+</div>
+
+<!-- ========================================================
+     MARKETPLACE BROWSE
+     ======================================================== -->
+<div class="page page-browse">
+
+  <!-- Top nav -->
+  <nav class="topnav">
+    <div class="topnav-logo">Farm2Table</div>
+    <div class="topnav-search">
+      <span class="topnav-search-icon">⌕</span>
+      <input type="search" placeholder="Search farms, products, or zip code…" />
+    </div>
+    <div class="topnav-links">
+      <a href="#" class="topnav-link">Browse</a>
+      <a href="#" class="topnav-link">How it works</a>
+      <a href="#" class="topnav-link">Become a vendor</a>
+    </div>
+    <div class="topnav-actions">
+      <button class="topnav-icon-btn" aria-label="Cart">
+        🛒<span class="cart-count">3</span>
+      </button>
+      <button class="topnav-icon-btn" aria-label="Account">👤</button>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="browse-header">
+    <div class="eyebrow" style="margin-bottom:8px">Sarasota · 34237 · within 50 mi</div>
+    <h1 class="browse-h1">All farms &amp; products</h1>
+    <div class="browse-meta">
+      <strong>47 farms</strong> · <strong>312 products</strong> · pickup, delivery, and shipping options · <a href="#">change location</a>
+    </div>
+  </header>
+
+  <!-- Layout -->
+  <div class="browse-layout">
+
+    <button class="filter-mobile-trigger">⚙ Filter &amp; sort</button>
+
+    <!-- Filter rail (desktop) -->
+    <aside class="filter-rail" aria-label="Filters">
+      <div class="filter-group">
+        <div class="filter-group-title">Location</div>
+        <div class="filter-zip">
+          <input type="text" value="34237" aria-label="Zip code" />
+          <select class="filter-zip-radius" aria-label="Radius">
+            <option>10 mi</option>
+            <option>25 mi</option>
+            <option selected>50 mi</option>
+            <option>100 mi</option>
+            <option>Ships to me</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-title">Category</div>
+        <label class="filter-option"><input type="checkbox" checked /> Eggs &amp; dairy <span class="filter-option-count">28</span></label>
+        <label class="filter-option"><input type="checkbox" /> Meat &amp; poultry <span class="filter-option-count">19</span></label>
+        <label class="filter-option"><input type="checkbox" checked /> Bakery &amp; cottage food <span class="filter-option-count">42</span></label>
+        <label class="filter-option"><input type="checkbox" /> Produce <span class="filter-option-count">87</span></label>
+        <label class="filter-option"><input type="checkbox" /> Honey &amp; preserves <span class="filter-option-count">31</span></label>
+        <label class="filter-option"><input type="checkbox" /> Pantry &amp; staples <span class="filter-option-count">23</span></label>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-title">Certifications</div>
+        <label class="filter-option"><input type="checkbox" /> USDA Organic <span class="filter-option-count">38</span></label>
+        <label class="filter-option"><input type="checkbox" checked /> Animal Welfare Approved <span class="filter-option-count">12</span></label>
+        <label class="filter-option"><input type="checkbox" /> Certified Naturally Grown <span class="filter-option-count">21</span></label>
+        <label class="filter-option"><input type="checkbox" /> Florida Cottage Food <span class="filter-option-count">42</span></label>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-title">Fulfillment</div>
+        <label class="filter-option"><input type="checkbox" checked /> Pickup at farm <span class="filter-option-count">34</span></label>
+        <label class="filter-option"><input type="checkbox" checked /> Local delivery <span class="filter-option-count">27</span></label>
+        <label class="filter-option"><input type="checkbox" /> Ships in FL <span class="filter-option-count">52</span></label>
+        <label class="filter-option"><input type="checkbox" /> Ships nationally <span class="filter-option-count">38</span></label>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-title">Practice</div>
+        <label class="filter-option"><input type="checkbox" /> Pastured</label>
+        <label class="filter-option"><input type="checkbox" /> Regenerative</label>
+        <label class="filter-option"><input type="checkbox" /> Grass-fed</label>
+        <label class="filter-option"><input type="checkbox" /> No-spray</label>
+      </div>
+    </aside>
+
+    <!-- Main grid -->
+    <main>
+      <div class="browse-toolbar">
+        <div class="browse-toolbar-meta">Showing <strong style="color:var(--foreground)">23 of 47 farms</strong> · 312 products</div>
+        <select class="sort-select">
+          <option>Sort: Closest first</option>
+          <option>Sort: Newest farms</option>
+          <option>Sort: Most ordered</option>
+        </select>
+      </div>
+
+      <div class="browse-grid">
+
+        <article class="product-card">
+          <div class="product-card-img img-eggs">
+            <button class="product-card-saved" aria-label="Save to favorites">♡</button>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-farm">Frank's Farm</div>
+            <div class="product-card-loc">Plant City, FL · 47 mi</div>
+            <div class="product-card-name">Pastured eggs, dozen</div>
+            <div class="cert-row">
+              <span class="cert-badge"><span class="cert-dot"></span>Animal Welfare Approved</span>
+            </div>
+            <div class="product-card-bottom">
+              <div class="product-card-price">$8.50<span class="product-card-price-unit">/dozen</span></div>
+              <div class="product-card-fulfillment">Pickup Sat · Delivery</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-card-img img-bread">
+            <button class="product-card-saved" aria-label="Save to favorites">♡</button>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-farm">Mike's Sourdough</div>
+            <div class="product-card-loc">Sarasota, FL · 12 mi</div>
+            <div class="product-card-name">Country sourdough loaf</div>
+            <div class="cert-row">
+              <span class="cert-badge"><span class="cert-dot"></span>FL Cottage Food</span>
+            </div>
+            <div class="product-card-bottom">
+              <div class="product-card-price">$9.00<span class="product-card-price-unit">/loaf</span></div>
+              <div class="product-card-fulfillment">Porch drop Tue</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-card-img img-honey">
+            <button class="product-card-saved" aria-label="Save to favorites">♥</button>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-farm">Wesley Pastures</div>
+            <div class="product-card-loc">Wesley Chapel, FL · ships</div>
+            <div class="product-card-name">Raw wildflower honey, 16 oz</div>
+            <div class="cert-row">
+              <span class="cert-badge"><span class="cert-dot"></span>Certified Naturally Grown</span>
+            </div>
+            <div class="product-card-bottom">
+              <div class="product-card-price">$14.00<span class="product-card-price-unit">/jar</span></div>
+              <div class="product-card-fulfillment">Ships nationally</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-card-img img-greens">
+            <button class="product-card-saved" aria-label="Save to favorites">♡</button>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-farm">Twin Oaks</div>
+            <div class="product-card-loc">Bradenton, FL · 18 mi</div>
+            <div class="product-card-name">Mixed salad greens, 8 oz</div>
+            <div class="cert-row">
+              <span class="cert-badge"><span class="cert-dot"></span>USDA Organic</span>
+            </div>
+            <div class="product-card-bottom">
+              <div class="product-card-price">$6.50<span class="product-card-price-unit">/bag</span></div>
+              <div class="product-card-fulfillment">Pickup Wed/Sat</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-card-img img-bacon">
+            <button class="product-card-saved" aria-label="Save to favorites">♡</button>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-farm">Smith Family Farm</div>
+            <div class="product-card-loc">Sarasota, FL · 8 mi</div>
+            <div class="product-card-name">Pastured pork bacon, 12 oz</div>
+            <div class="cert-row">
+              <span class="cert-badge"><span class="cert-dot"></span>Animal Welfare Approved</span>
+            </div>
+            <div class="product-card-bottom">
+              <div class="product-card-price">$12.00<span class="product-card-price-unit">/pkg</span></div>
+              <div class="product-card-fulfillment">Pickup Sat</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-card-img img-tomato">
+            <button class="product-card-saved" aria-label="Save to favorites">♡</button>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-farm">Reyes Heritage</div>
+            <div class="product-card-loc">Ruskin, FL · 32 mi</div>
+            <div class="product-card-name">Heirloom tomatoes, 1 lb</div>
+            <div class="cert-row">
+              <span class="cert-badge"><span class="cert-dot"></span>Certified Naturally Grown</span>
+            </div>
+            <div class="product-card-bottom">
+              <div class="product-card-price">$5.75<span class="product-card-price-unit">/lb</span></div>
+              <div class="product-card-fulfillment">Pickup Fri/Sat</div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ========================================================
+     FARM PROFILE
+     ======================================================== -->
+<div class="page page-profile">
+
+  <nav class="topnav">
+    <div class="topnav-logo">Farm2Table</div>
+    <div class="topnav-search">
+      <span class="topnav-search-icon">⌕</span>
+      <input type="search" placeholder="Search farms, products, or zip code…" />
+    </div>
+    <div class="topnav-links">
+      <a href="#" class="topnav-link">Browse</a>
+      <a href="#" class="topnav-link">How it works</a>
+      <a href="#" class="topnav-link">Become a vendor</a>
+    </div>
+    <div class="topnav-actions">
+      <button class="topnav-icon-btn" aria-label="Cart">🛒<span class="cart-count">3</span></button>
+      <button class="topnav-icon-btn" aria-label="Account">👤</button>
+    </div>
+  </nav>
+
+  <!-- Hero photo -->
+  <div class="profile-hero">
+    <div class="profile-hero-note">photo placeholder · golden-hour pasture, Frank with hens</div>
+  </div>
+
+  <div class="profile-content-wrap">
+
+    <!-- Profile header card (overlaps hero) -->
+    <div class="profile-header-card">
+      <div class="profile-eyebrow">Plant City, Florida · Verified vendor</div>
+      <h1 class="profile-name serif">Frank's Farm</h1>
+      <p class="profile-tender">Tended by <strong>Frank Reyes</strong> since 2018 · 30 hens, free-range under live oaks</p>
+      <div class="profile-cert-row">
+        <span class="cert-badge"><span class="cert-dot"></span>Animal Welfare Approved</span>
+        <span class="cert-badge"><span class="cert-dot"></span>FL Limited Poultry/Egg Permit</span>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-primary">♡ Save this farm</button>
+        <button class="btn btn-secondary">View 4 products</button>
+      </div>
+    </div>
+
+    <!-- Trust signals row -->
+    <div class="profile-trust">
+      <div class="trust-stat">
+        <div class="trust-stat-label">On Farm2Table since</div>
+        <div class="trust-stat-value">Oct 2026</div>
+        <div class="trust-stat-detail">7 months</div>
+      </div>
+      <div class="trust-stat">
+        <div class="trust-stat-label">Permit status</div>
+        <div class="trust-stat-value" style="color:var(--success)">Active</div>
+        <div class="trust-stat-detail">Expires 2027-09 · <a href="#">FDACS lookup</a></div>
+      </div>
+      <div class="trust-stat">
+        <div class="trust-stat-label">Customer reorder rate</div>
+        <div class="trust-stat-value">64%</div>
+        <div class="trust-stat-detail">within 30 days</div>
+      </div>
+      <div class="trust-stat">
+        <div class="trust-stat-label">Cancellation rate</div>
+        <div class="trust-stat-value" style="color:var(--success)">2%</div>
+        <div class="trust-stat-detail">last 30 days</div>
+      </div>
+    </div>
+
+    <!-- Story (asymmetric magazine spread) -->
+    <div class="profile-story">
+      <div class="profile-story-text">
+        <div class="profile-quote serif">"My birds run loose under the live oaks. The eggs taste like that — like a place, not a brand."</div>
+        <div class="profile-quote-attr">— Frank, on the farm since 2018</div>
+
+        <p style="margin-top:24px">Frank Reyes started with six hens behind his house in 2018. Eight years later, his flock is thirty strong, all free-range under a stand of mature live oaks at the back of the property. Every bird has a name, although Frank admits "they don't always come when called."</p>
+
+        <p>The hens forage for insects, scratch grass, and dust-bathe in the shade. Their feed is supplemented but never the main course — that's why the yolks come up the color of marigolds and the whites stand tall. Pickup at the farm is Saturday mornings; Frank's wife usually pulls them out of the cooler with the order number written in pencil on the carton.</p>
+
+        <p>Frank's farm is permitted under the FL Limited Poultry/Egg Farm Operation regulation and certified Animal Welfare Approved by A Greener World — both verified through Farm2Table.</p>
+      </div>
+      <div class="profile-secondary-img">
+        <div class="profile-secondary-img-note">photo · the live oaks at back of property</div>
+      </div>
+    </div>
+
+    <!-- Fulfillment summary -->
+    <div class="profile-fulfillment">
+      <div>
+        <div class="profile-fulfillment-label">Pickup</div>
+        <div class="profile-fulfillment-detail">Saturdays · 9–11am at the farm</div>
+      </div>
+      <div>
+        <div class="profile-fulfillment-label">Local delivery</div>
+        <div class="profile-fulfillment-detail">Within 10 miles · $4 fee</div>
+      </div>
+      <div>
+        <div class="profile-fulfillment-label">Shipping</div>
+        <div class="profile-fulfillment-detail">In-state Florida · $7 with insulated cooler</div>
+      </div>
+      <div>
+        <div class="profile-fulfillment-label">Lead time</div>
+        <div class="profile-fulfillment-detail">Order by Wed for Saturday pickup</div>
+      </div>
+    </div>
+
+    <!-- Products from this farm -->
+    <section class="profile-products-section">
+      <h2 class="profile-products-h2">Products from Frank's Farm</h2>
+      <div class="browse-grid" style="margin-top:16px">
+
+        <article class="product-card">
+          <div class="product-card-img img-eggs"><button class="product-card-saved" aria-label="Save to favorites">♡</button></div>
+          <div class="product-card-body">
+            <div class="product-card-name">Pastured eggs, dozen</div>
+            <div style="font-size:13px;color:var(--muted-foreground);margin-top:4px;margin-bottom:6px">Marigold yolks, hand-collected, washed cool. Lays vary brown and blue-green.</div>
+            <div class="product-card-bottom">
+              <div class="product-card-price">$8.50<span class="product-card-price-unit">/dozen</span></div>
+              <button class="btn btn-accent btn-sm">Add to cart</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-card-img img-eggs" style="background:linear-gradient(135deg,hsl(195,30%,55%) 0%,hsl(180,25%,40%) 50%,hsl(95,20%,28%) 100%)"><button class="product-card-saved" aria-label="Save to favorites">♡</button></div>
+          <div class="product-card-body">
+            <div class="product-card-name">Pastured eggs, half-dozen</div>
+            <div style="font-size:13px;color:var(--muted-foreground);margin-top:4px;margin-bottom:6px">Same eggs, smaller commitment.</div>
+            <div class="product-card-bottom">
+              <div class="product-card-price">$5.00<span class="product-card-price-unit">/half-dozen</span></div>
+              <button class="btn btn-accent btn-sm">Add to cart</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-card-img" style="aspect-ratio:4/3;background:linear-gradient(135deg,hsl(35,50%,75%) 0%,hsl(35,40%,55%) 50%,hsl(25,30%,30%) 100%)"><button class="product-card-saved" aria-label="Save to favorites">♡</button></div>
+          <div class="product-card-body">
+            <div class="product-card-name">Duck eggs, half-dozen</div>
+            <div style="font-size:13px;color:var(--muted-foreground);margin-top:4px;margin-bottom:6px">Limited; available when the ducks are laying. Richer yolk, denser white.</div>
+            <div class="product-card-bottom">
+              <div class="product-card-price">$8.00<span class="product-card-price-unit">/half-dozen</span></div>
+              <button class="btn btn-secondary btn-sm">Notify when in</button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <div style="height:64px"></div>
+  </div>
+</div>
+
+<!-- ========================================================
+     CHECKOUT
+     ======================================================== -->
+<div class="page page-checkout">
+
+  <nav class="checkout-topnav">
+    <div class="topnav-logo">Farm2Table</div>
+    <div style="font-size:14px;color:var(--muted-foreground)">Checkout</div>
+    <div class="checkout-topnav-secure">🔒 Secure checkout · Stripe</div>
+  </nav>
+
+  <div class="checkout-layout">
+
+    <!-- Main column -->
+    <div>
+      <h1 class="checkout-h1">Almost there.</h1>
+      <p class="checkout-context">Your cart has items from 3 farms. Each farm sets its own pickup or delivery — pick one for each below.</p>
+
+      <!-- Section 1: Cart review -->
+      <div class="checkout-section">
+        <div class="checkout-section-header">
+          <div class="checkout-section-title">
+            <span class="checkout-section-num complete">✓</span>
+            Your cart
+          </div>
+          <span class="checkout-section-edit">Edit</span>
+        </div>
+        <div class="checkout-section-body">
+          <div class="checkout-line">
+            <div class="checkout-line-img" style="background:linear-gradient(135deg,hsl(40,60%,55%),hsl(35,55%,45%))"></div>
+            <div>
+              <div class="checkout-line-title">Pastured eggs, dozen × 2</div>
+              <div class="checkout-line-meta">Frank's Farm · Plant City, FL</div>
+            </div>
+            <div class="checkout-line-price">$17.00</div>
+          </div>
+          <div class="checkout-line">
+            <div class="checkout-line-img" style="background:linear-gradient(135deg,hsl(35,55%,60%),hsl(30,45%,35%))"></div>
+            <div>
+              <div class="checkout-line-title">Country sourdough loaf × 1</div>
+              <div class="checkout-line-meta">Mike's Sourdough · Sarasota, FL</div>
+            </div>
+            <div class="checkout-line-price">$9.00</div>
+          </div>
+          <div class="checkout-line">
+            <div class="checkout-line-img" style="background:linear-gradient(135deg,hsl(35,55%,60%),hsl(30,45%,35%))"></div>
+            <div>
+              <div class="checkout-line-title">Seeded rye loaf × 1</div>
+              <div class="checkout-line-meta">Mike's Sourdough · Sarasota, FL</div>
+            </div>
+            <div class="checkout-line-price">$11.00</div>
+          </div>
+          <div class="checkout-line">
+            <div class="checkout-line-img" style="background:linear-gradient(135deg,hsl(45,80%,65%),hsl(38,75%,50%))"></div>
+            <div>
+              <div class="checkout-line-title">Raw wildflower honey, 16 oz × 1</div>
+              <div class="checkout-line-meta">Wesley Pastures · Wesley Chapel, FL</div>
+            </div>
+            <div class="checkout-line-price">$14.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Per-farm fulfillment -->
+      <div class="checkout-section">
+        <div class="checkout-section-header">
+          <div class="checkout-section-title">
+            <span class="checkout-section-num">2</span>
+            Choose how each farm gets to you
+          </div>
+        </div>
+
+        <!-- Frank's Farm: pickup chosen -->
+        <div class="farm-fulfillment">
+          <div class="farm-fulfillment-header">
+            <div class="farm-fulfillment-name serif">Frank's Farm</div>
+            <div class="farm-fulfillment-items">2 items · $17.00</div>
+          </div>
+          <div class="farm-fulfillment-status">Pickup at the farm · Sat May 4, 9–11am</div>
+
+          <div class="fulfillment-options">
+            <div class="fulfillment-option selected">
+              <div class="fulfillment-option-label">📍 Farm pickup</div>
+              <div class="fulfillment-option-detail">Saturday mornings, 9–11am</div>
+              <div class="fulfillment-option-fee">Free</div>
+            </div>
+            <div class="fulfillment-option">
+              <div class="fulfillment-option-label">🚗 Local delivery</div>
+              <div class="fulfillment-option-detail">Within 10 mi of farm</div>
+              <div class="fulfillment-option-fee">+$4</div>
+            </div>
+            <div class="fulfillment-option">
+              <div class="fulfillment-option-label">📦 Ship in FL</div>
+              <div class="fulfillment-option-detail">Insulated cooler · 1–2 days</div>
+              <div class="fulfillment-option-fee">+$7</div>
+            </div>
+          </div>
+
+          <div class="fulfillment-window">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:8px">Pickup window — next 14 days</div>
+            <div class="fulfillment-window-day">Apr 27</div>
+            <div class="fulfillment-window-day">Apr 30</div>
+            <div class="fulfillment-window-day selected">May 4</div>
+            <div class="fulfillment-window-day">May 7</div>
+            <div class="fulfillment-window-day">May 11</div>
+          </div>
+        </div>
+
+        <!-- Mike's Sourdough: delivery chosen -->
+        <div class="farm-fulfillment">
+          <div class="farm-fulfillment-header">
+            <div class="farm-fulfillment-name serif">Mike's Sourdough</div>
+            <div class="farm-fulfillment-items">2 items · $20.00</div>
+          </div>
+          <div class="farm-fulfillment-status">Porch drop · Tue Apr 30 · $4 fee</div>
+
+          <div class="fulfillment-options">
+            <div class="fulfillment-option">
+              <div class="fulfillment-option-label">📍 Farm pickup</div>
+              <div class="fulfillment-option-detail">Fridays 4–6pm</div>
+              <div class="fulfillment-option-fee">Free</div>
+            </div>
+            <div class="fulfillment-option selected">
+              <div class="fulfillment-option-label">🚗 Porch drop</div>
+              <div class="fulfillment-option-detail">Tuesdays · zip 34237 ✓</div>
+              <div class="fulfillment-option-fee">+$4</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wesley Pastures: shipping chosen -->
+        <div class="farm-fulfillment">
+          <div class="farm-fulfillment-header">
+            <div class="farm-fulfillment-name serif">Wesley Pastures</div>
+            <div class="farm-fulfillment-items">1 item · $14.00</div>
+          </div>
+          <div class="farm-fulfillment-status">Ships USPS Priority · arrives Thu May 2</div>
+
+          <div class="fulfillment-options">
+            <div class="fulfillment-option selected">
+              <div class="fulfillment-option-label">📦 Ships nationally</div>
+              <div class="fulfillment-option-detail">USPS Priority · 2–3 days</div>
+              <div class="fulfillment-option-fee">+$5</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Address -->
+      <div class="checkout-section">
+        <div class="checkout-section-header">
+          <div class="checkout-section-title">
+            <span class="checkout-section-num">3</span>
+            Where to deliver &amp; ship
+          </div>
+        </div>
+        <div class="checkout-section-body">
+          <div class="form-row form-row-2">
+            <div>
+              <label class="form-label">First name</label>
+              <input class="form-input" value="Sarah" />
+            </div>
+            <div>
+              <label class="form-label">Last name</label>
+              <input class="form-input" value="Kim" />
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Address</label>
+            <input class="form-input" value="2841 Bay Shore Rd" />
+          </div>
+          <div class="form-row form-row-2">
+            <div>
+              <label class="form-label">City</label>
+              <input class="form-input" value="Sarasota" />
+            </div>
+            <div>
+              <label class="form-label">Zip</label>
+              <input class="form-input" value="34237" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Payment -->
+      <div class="checkout-section">
+        <div class="checkout-section-header">
+          <div class="checkout-section-title">
+            <span class="checkout-section-num">4</span>
+            Payment
+          </div>
+        </div>
+        <div class="checkout-section-body">
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button class="btn btn-secondary" style="flex:1">  Apple Pay</button>
+            <button class="btn btn-secondary" style="flex:1">G Google Pay</button>
+          </div>
+          <div style="text-align:center;color:var(--text-tertiary);font-size:12px;margin-bottom:12px">— or pay with card —</div>
+          <div class="form-row">
+            <label class="form-label">Card number</label>
+            <input class="form-input" placeholder="•••• •••• •••• ••••" />
+          </div>
+          <div class="form-row form-row-2">
+            <div>
+              <label class="form-label">Expires</label>
+              <input class="form-input" placeholder="MM / YY" />
+            </div>
+            <div>
+              <label class="form-label">CVC</label>
+              <input class="form-input" placeholder="•••" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order summary (sticky right) -->
+    <aside class="order-summary">
+      <h2 class="order-summary-h2">Your week</h2>
+      <p class="order-summary-meta">5 items · 3 farms</p>
+
+      <div style="margin:14px 0;padding:12px;background:var(--background);border-radius:6px;border:1px solid var(--border);font-size:12px">
+        <div style="font-weight:600;color:var(--foreground);margin-bottom:8px">Pickup &amp; delivery plan</div>
+        <div style="color:var(--muted-foreground);line-height:1.7">
+          <div><strong style="color:var(--foreground)">Tue Apr 30</strong> · Mike's porch drop</div>
+          <div><strong style="color:var(--foreground)">Thu May 2</strong> · Wesley's honey arrives</div>
+          <div><strong style="color:var(--foreground)">Sat May 4</strong> · Frank's pickup 9–11am</div>
+        </div>
+      </div>
+
+      <div class="order-summary-line"><span>Subtotal</span><span>$51.00</span></div>
+      <div class="order-summary-line"><span>Delivery (Mike's)</span><span>$4.00</span></div>
+      <div class="order-summary-line"><span>Shipping (Wesley)</span><span>$5.00</span></div>
+      <div class="order-summary-line"><span>Service fee (4%)</span><span>$2.40</span></div>
+      <div class="order-summary-line"><span>Tax</span><span>$0.00</span></div>
+      <div class="order-summary-line total"><span>Total</span><span>$62.40</span></div>
+
+      <button class="btn btn-primary order-summary-cta btn-lg">Place order — $62.40</button>
+
+      <div class="order-summary-trust">
+        <span>🔒 Stripe secure</span>
+        <span>•</span>
+        <span>1-tap refunds</span>
+        <span>•</span>
+        <span>Per-vendor splits</span>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Mobile sticky CTA -->
+  <div class="checkout-mobile-cta">
+    <button class="btn btn-primary btn-lg" style="width:100%">Place order — $62.40</button>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.mockup-chip[data-control]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const control = chip.dataset.control;
+      const value = chip.dataset.value;
+      document.documentElement.setAttribute('data-' + control, value);
+      document.querySelectorAll('.mockup-chip[data-control="' + control + '"]').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>

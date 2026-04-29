@@ -1,0 +1,42 @@
+{
+  "name": "@workspace/web-shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./convex": "./src/convex.ts",
+    "./datetime": "./src/datetime.ts",
+    "./sentry": "./src/sentry.ts",
+    "./providers": "./src/providers.tsx",
+    "./featureFlags": "./src/featureFlags.ts",
+    "./errorBoundaries": "./src/ErrorBoundaryFallback.tsx"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "react": "^19.2.5"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@workspace/eslint-config": "workspace:*",
+    "eslint": "^9.39.4",
+    "happy-dom": "^15.11.0",
+    "react-dom": "^19.2.5",
+    "typescript": "^6.0.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  },
+  "peerDependencies": {
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  }
+}

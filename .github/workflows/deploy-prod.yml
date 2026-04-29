@@ -1,0 +1,12 @@
+name: deploy-prod
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  todo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "TODO: Story 1.13 — author the real prod deploy pipeline (manual approval gate, Convex deploy --target prod, Vercel promote-to-prod, smoke check)."
