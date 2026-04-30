@@ -8,6 +8,7 @@
     "./datetime": "./src/datetime.ts",
     "./sentry": "./src/sentry.ts",
     "./providers": "./src/providers.tsx",
+    "./app-providers": "./src/app-providers.tsx",
     "./featureFlags": "./src/featureFlags.ts",
     "./errorBoundaries": "./src/ErrorBoundaryFallback.tsx"
   },
@@ -18,9 +19,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "convex": "^1.35.1",
     "react": "^19.2.5"
   },
   "devDependencies": {
+    "@clerk/nextjs": "^6.36.5",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.1.0",
     "@types/react": "^19.2.14",
@@ -30,13 +33,21 @@
     "@workspace/eslint-config": "workspace:*",
     "eslint": "^9.39.4",
     "happy-dom": "^15.11.0",
+    "next": "^16.2.4",
     "react-dom": "^19.2.5",
     "typescript": "^6.0.3",
     "vite": "^5.4.11",
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
+    "@clerk/nextjs": "^6.36.5",
+    "next": "^16.2.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
+  },
+  "peerDependenciesMeta": {
+    "@clerk/nextjs": { "optional": false },
+    "next": { "optional": false },
+    "react-dom": { "optional": false }
   }
 }

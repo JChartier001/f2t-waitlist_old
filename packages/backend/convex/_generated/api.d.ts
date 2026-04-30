@@ -8,9 +8,9 @@
  * @module
  */
 
-import type * as notes from "../notes.js";
-import type * as openai from "../openai.js";
-import type * as utils from "../utils.js";
+import type * as helpers_auth from "../helpers/auth.js";
+import type * as helpers_errors from "../helpers/errors.js";
+import type * as helpers_testFixtures from "../helpers/testFixtures.js";
 
 import type {
   ApiFromModules,
@@ -19,9 +19,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  notes: typeof notes;
-  openai: typeof openai;
-  utils: typeof utils;
+  "helpers/auth": typeof helpers_auth;
+  "helpers/errors": typeof helpers_errors;
+  "helpers/testFixtures": typeof helpers_testFixtures;
 }>;
 
 /**
@@ -50,4 +50,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+};

@@ -2,6 +2,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    setupFiles: ["./vitest.setup.ts"],
     environment: "edge-runtime",
     globals: true,
     include: ["convex/**/*.test.ts"],
@@ -19,8 +20,11 @@ export default defineConfig({
       exclude: [
         "convex/_generated/**",
         "convex/__test_helpers/**",
-        "convex/_test_helpers/**",
-        "**/*.types.ts",
+        "convex/**/__tests__/**",
+        "**/*.test.ts",
+        // Evaluated by Convex CLI / deployment; not loaded in Vitest.
+        "convex/auth.config.ts",
+        "convex/convex.config.ts",
         "node_modules/**",
         "vitest.config.ts",
       ],
